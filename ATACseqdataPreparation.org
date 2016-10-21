@@ -1,0 +1,41 @@
+#+title: "prepare ATAC-seq data from Luca/Pique-Regi lab for analysis"
+#+author: Heejung Shim
+
+#+latex_header: \usepackage{parskip}
+#+latex_header: \usepackage{graphicx}
+#+latex_header: \setlength{\parindent}{0pt}
+#+latex_header: \usepackage{underscore}
+#+latex_header: \textwidth 16cm
+#+latex_header: \oddsidemargin 0.5cm
+#+latex_header: \evensidemargin 0.5cm
+#+OPTIONS: ^:nil
+
+* Copy new ATAC-seq data from Luca/Pique-Regi lab to the rice cluster
+
+Create directories in the rice cluster to save ATAC-seq data:
+#+begin_src bash
+cd /home/hjshim/d/shared_data/internal_restricted/
+mkdir atacseq_Luca_PiqueRegi
+mkdir atacseq_Luca_PiqueRegi/rawbamfiles
+mkdir atacseq_Luca_PiqueRegi/info
+#+end_src
+
+Copy infomation on each file:
+#+begin_src bash
+cd /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/
+scp gb9571@grid.wayne.edu:/nfs/rprscratch/atac.lcl/deseq/cv.txt info/
+#+end_src
+
+Copy bam files:
+#+begin_src bash
+cd /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/
+scp gb9571@grid.wayne.edu:/nfs/rprscratch/atac.lcl/merge/*.bam rawbamfiles/
+#+end_src
+
+Copy merged bam files:
+#+begin_src bash
+cd /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/
+scp gb9571@grid.wayne.edu:/nfs/rprscratch/atac.lcl/mergeReps/*.bam rawbamfiles/
+#+end_src
+ 
+

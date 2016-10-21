@@ -1,0 +1,77 @@
+% Created 2016-10-21 Fri 03:21
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{fixltx2e}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{marvosym}
+\usepackage{wasysym}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\tolerance=1000
+\usepackage{listings}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{underscore}
+\usepackage{parskip}
+\usepackage{lmodern}
+\usepackage{parskip}
+\usepackage{graphicx}
+\setlength{\parindent}{0pt}
+\usepackage{underscore}
+\textwidth 16cm
+\oddsidemargin 0.5cm
+\evensidemargin 0.5cm
+\author{Heejung Shim}
+\date{\today}
+\title{"prepare ATAC-seq data from Luca/Pique-Regi lab for analysis"}
+\hypersetup{
+  pdfkeywords={},
+  pdfsubject={},
+  pdfcreator={Emacs 24.5.1 (Org mode 8.2.10)}}
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+
+\section{Copy new ATAC-seq data from Luca/Pique-Regi lab to the rice cluster}
+\label{sec-1}
+
+Create directories in the rice cluster to save ATAC-seq data:
+\lstset{breaklines=true,showspaces=false,showtabs=false,tabsize=2,basicstyle=\ttfamily,frame=single,keywordstyle=\color{Blue},stringstyle=\color{BrickRed},commentstyle=\color{ForestGreen},columns=fullflexible,language=bash,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+cd /home/hjshim/d/shared_data/internal_restricted/
+mkdir atacseq_Luca_PiqueRegi
+mkdir atacseq_Luca_PiqueRegi/rawbamfiles
+mkdir atacseq_Luca_PiqueRegi/info
+\end{lstlisting}
+
+Copy infomation on each file:
+\lstset{breaklines=true,showspaces=false,showtabs=false,tabsize=2,basicstyle=\ttfamily,frame=single,keywordstyle=\color{Blue},stringstyle=\color{BrickRed},commentstyle=\color{ForestGreen},columns=fullflexible,language=bash,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+cd /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/
+scp gb9571@grid.wayne.edu:/nfs/rprscratch/atac.lcl/deseq/cv.txt info/
+\end{lstlisting}
+
+Copy bam files:
+\lstset{breaklines=true,showspaces=false,showtabs=false,tabsize=2,basicstyle=\ttfamily,frame=single,keywordstyle=\color{Blue},stringstyle=\color{BrickRed},commentstyle=\color{ForestGreen},columns=fullflexible,language=bash,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+cd /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/
+scp gb9571@grid.wayne.edu:/nfs/rprscratch/atac.lcl/merge/*.bam rawbamfiles/
+\end{lstlisting}
+
+Copy merged bam files:
+\lstset{breaklines=true,showspaces=false,showtabs=false,tabsize=2,basicstyle=\ttfamily,frame=single,keywordstyle=\color{Blue},stringstyle=\color{BrickRed},commentstyle=\color{ForestGreen},columns=fullflexible,language=bash,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+cd /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/
+scp gb9571@grid.wayne.edu:/nfs/rprscratch/atac.lcl/mergeReps/*.bam rawbamfiles/
+\end{lstlisting}
+% Emacs 24.5.1 (Org mode 8.2.10)
+\end{document}
