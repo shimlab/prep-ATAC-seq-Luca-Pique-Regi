@@ -1,4 +1,4 @@
-% Created 2016-10-21 Fri 03:21
+% Created 2016-11-01 Tue 12:39
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -72,6 +72,293 @@ Copy merged bam files:
 \begin{lstlisting}
 cd /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/
 scp gb9571@grid.wayne.edu:/nfs/rprscratch/atac.lcl/mergeReps/*.bam rawbamfiles/
+\end{lstlisting}
+
+\section{Convert bam file to hdf5 format}
+\label{sec-2}
+\subsection{Prepare directory and install genome library, samtools, and python}
+\label{sec-2-1}
+\subsubsection{Create directory}
+\label{sec-2-1-1}
+Create directory to save hdf5 files:
+\lstset{breaklines=true,showspaces=false,showtabs=false,tabsize=2,basicstyle=\ttfamily,frame=single,keywordstyle=\color{Blue},stringstyle=\color{BrickRed},commentstyle=\color{ForestGreen},columns=fullflexible,language=bash,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+cd /home/hjshim/d/shared_data/internal/
+mkdir hdf5
+cd hdf5
+mkdir hg19
+\end{lstlisting}
+\subsubsection{Install genome library}
+\label{sec-2-1-2}
+Clone Graham's genome repo and follow his instruction.
+\lstset{breaklines=true,showspaces=false,showtabs=false,tabsize=2,basicstyle=\ttfamily,frame=single,keywordstyle=\color{Blue},stringstyle=\color{BrickRed},commentstyle=\color{ForestGreen},columns=fullflexible,language=bash,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+cd /home/hjshim/d/hjshim/software/genome
+\end{lstlisting}
+\subsubsection{Install samtools}
+\label{sec-2-1-3}
+Download samtools on rice cluster:
+\lstset{breaklines=true,showspaces=false,showtabs=false,tabsize=2,basicstyle=\ttfamily,frame=single,keywordstyle=\color{Blue},stringstyle=\color{BrickRed},commentstyle=\color{ForestGreen},columns=fullflexible,language=bash,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+cd /home/hjshim/software/source/
+wget https://github.com/samtools/samtools/releases/download/1.3.1/samtools-1.3.1.tar.bz2
+tar -vxjf samtools-1.3.1.tar.bz2
+cd samtools-1.3.1
+make
+\end{lstlisting}
+
+Install it on rice cluster:
+\lstset{breaklines=true,showspaces=false,showtabs=false,tabsize=2,basicstyle=\ttfamily,frame=single,keywordstyle=\color{Blue},stringstyle=\color{BrickRed},commentstyle=\color{ForestGreen},columns=fullflexible,language=bash,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+make prefix=~/software/install/samtools-1.3.1 install
+\end{lstlisting}
+
+Make a symbolic link:
+\lstset{breaklines=true,showspaces=false,showtabs=false,tabsize=2,basicstyle=\ttfamily,frame=single,keywordstyle=\color{Blue},stringstyle=\color{BrickRed},commentstyle=\color{ForestGreen},columns=fullflexible,language=bash,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+cd /home/hjshim/bin
+ln -s ~/software/install/samtools-1.3.1/bin/* .
+ls -al
+\end{lstlisting}
+
+\subsubsection{Install python}
+\label{sec-2-1-4}
+\lstset{breaklines=true,showspaces=false,showtabs=false,tabsize=2,basicstyle=\ttfamily,frame=single,keywordstyle=\color{Blue},stringstyle=\color{BrickRed},commentstyle=\color{ForestGreen},columns=fullflexible,language=bash,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+module add python
+pip install pysam --user
+\end{lstlisting}
+
+\subsection{Copy chromosome.h5 file to rice cluster}
+\label{sec-2-2}
+I will copy the in PPS cluster to rice cluster here:
+\lstset{breaklines=true,showspaces=false,showtabs=false,tabsize=2,basicstyle=\ttfamily,frame=single,keywordstyle=\color{Blue},stringstyle=\color{BrickRed},commentstyle=\color{ForestGreen},columns=fullflexible,language=bash,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+cd /home/hjshim/d/shared_data/internal/hdf5/hg19/
+\end{lstlisting}
+
+Now login into PPS cluster and copy chromosome.h5 file:
+\lstset{breaklines=true,showspaces=false,showtabs=false,tabsize=2,basicstyle=\ttfamily,frame=single,keywordstyle=\color{Blue},stringstyle=\color{BrickRed},commentstyle=\color{ForestGreen},columns=fullflexible,language=bash,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+cd /data/internal/genome_db/hg19/
+scp chromosome.h5 hjshim@rice.rcac.purdue.edu:/home/hjshim/d/shared_data/internal/hdf5/hg19/
+\end{lstlisting}
+
+\subsection{Filter reads with low alignment quality 10}
+\label{sec-2-3}
+\subsubsection{Create directory to save preprocessed bam files}
+\label{sec-2-3-1}
+\lstset{breaklines=true,showspaces=false,showtabs=false,tabsize=2,basicstyle=\ttfamily,frame=single,keywordstyle=\color{Blue},stringstyle=\color{BrickRed},commentstyle=\color{ForestGreen},columns=fullflexible,language=bash,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+cd /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/
+mkdir processedbamfiles
+\end{lstlisting}
+\subsubsection{Filter reads with low alignment quality 10}
+\label{sec-2-3-2}
+\lstset{breaklines=true,showspaces=false,showtabs=false,tabsize=2,basicstyle=\ttfamily,frame=single,keywordstyle=\color{Blue},stringstyle=\color{BrickRed},commentstyle=\color{ForestGreen},columns=fullflexible,language=bash,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+cd /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/rawbamfiles/
+
+samtools view -b -q 10 AT2-N701-N501.bam > ../processedbamfiles/AT2-N701-N501.qfiltered10.bam
+samtools view -b -q 10 AT2-N701-N502.bam > ../processedbamfiles/AT2-N701-N502.qfiltered10.bam
+samtools view -b -q 10 AT2-N701-N503.bam > ../processedbamfiles/AT2-N701-N503.qfiltered10.bam
+
+samtools view -b -q 10 AT2-N702-N501.bam > ../processedbamfiles/AT2-N702-N501.qfiltered10.bam
+samtools view -b -q 10 AT2-N702-N502.bam > ../processedbamfiles/AT2-N702-N502.qfiltered10.bam
+samtools view -b -q 10 AT2-N702-N503.bam > ../processedbamfiles/AT2-N702-N503.qfiltered10.bam
+
+samtools view -b -q 10 AT2-N703-N501.bam > ../processedbamfiles/AT2-N703-N501.qfiltered10.bam
+samtools view -b -q 10 AT2-N703-N502.bam > ../processedbamfiles/AT2-N703-N502.qfiltered10.bam
+samtools view -b -q 10 AT2-N703-N503.bam > ../processedbamfiles/AT2-N703-N503.qfiltered10.bam
+
+samtools view -b -q 10 AT2-N704-N501.bam > ../processedbamfiles/AT2-N704-N501.qfiltered10.bam
+samtools view -b -q 10 AT2-N704-N502.bam > ../processedbamfiles/AT2-N704-N502.qfiltered10.bam
+samtools view -b -q 10 AT2-N704-N503.bam > ../processedbamfiles/AT2-N704-N503.qfiltered10.bam
+
+samtools view -b -q 10 AT2-N705-N501.bam > ../processedbamfiles/AT2-N705-N501.qfiltered10.bam
+samtools view -b -q 10 AT2-N705-N502.bam > ../processedbamfiles/AT2-N705-N502.qfiltered10.bam
+samtools view -b -q 10 AT2-N705-N503.bam > ../processedbamfiles/AT2-N705-N503.qfiltered10.bam
+
+samtools view -b -q 10 AT2-N706-N501.bam > ../processedbamfiles/AT2-N706-N501.qfiltered10.bam
+samtools view -b -q 10 AT2-N706-N502.bam > ../processedbamfiles/AT2-N706-N502.qfiltered10.bam
+samtools view -b -q 10 AT2-N706-N503.bam > ../processedbamfiles/AT2-N706-N503.qfiltered10.bam
+\end{lstlisting}
+
+\subsection{Index filtered bam files}
+\label{sec-2-4}
+\lstset{breaklines=true,showspaces=false,showtabs=false,tabsize=2,basicstyle=\ttfamily,frame=single,keywordstyle=\color{Blue},stringstyle=\color{BrickRed},commentstyle=\color{ForestGreen},columns=fullflexible,language=bash,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+cd /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/processedbamfiles/
+
+samtools index AT2-N701-N501.qfiltered10.bam
+samtools index AT2-N701-N502.qfiltered10.bam
+samtools index AT2-N701-N503.qfiltered10.bam
+
+samtools index AT2-N702-N501.qfiltered10.bam
+samtools index AT2-N702-N502.qfiltered10.bam
+samtools index AT2-N702-N503.qfiltered10.bam
+
+samtools index AT2-N703-N501.qfiltered10.bam
+samtools index AT2-N703-N502.qfiltered10.bam
+samtools index AT2-N703-N503.qfiltered10.bam
+
+samtools index AT2-N704-N501.qfiltered10.bam
+samtools index AT2-N704-N502.qfiltered10.bam
+samtools index AT2-N704-N503.qfiltered10.bam
+
+samtools index AT2-N705-N501.qfiltered10.bam
+samtools index AT2-N705-N502.qfiltered10.bam
+samtools index AT2-N705-N503.qfiltered10.bam
+
+samtools index AT2-N706-N501.qfiltered10.bam
+samtools index AT2-N706-N502.qfiltered10.bam
+samtools index AT2-N706-N503.qfiltered10.bam
+\end{lstlisting}
+
+\subsection{Convert filtered bam files into hdf5}
+\label{sec-2-5}
+\lstset{breaklines=true,showspaces=false,showtabs=false,tabsize=2,basicstyle=\ttfamily,frame=single,keywordstyle=\color{Blue},stringstyle=\color{BrickRed},commentstyle=\color{ForestGreen},columns=fullflexible,language=bash,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+cd /home/hjshim/d/hjshim/software/genome/python/script/db/
+
+python load_bam_5prime_ends.py --assembly hg19 /atacseq_Luca_PiqueRegi/N701N501.qfiltered10.fwd /atacseq_Luca_PiqueRegi/N701N501.qfiltered10.rev /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/processedbamfiles/AT2-N701-N501.qfiltered10.bam
+python load_bam_5prime_ends.py --assembly hg19 /atacseq_Luca_PiqueRegi/N701N502.qfiltered10.fwd /atacseq_Luca_PiqueRegi/N701N502.qfiltered10.rev /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/processedbamfiles/AT2-N701-N502.qfiltered10.bam
+python load_bam_5prime_ends.py --assembly hg19 /atacseq_Luca_PiqueRegi/N701N503.qfiltered10.fwd /atacseq_Luca_PiqueRegi/N701N503.qfiltered10.rev /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/processedbamfiles/AT2-N701-N503.qfiltered10.bam
+
+python load_bam_5prime_ends.py --assembly hg19 /atacseq_Luca_PiqueRegi/N702N501.qfiltered10.fwd /atacseq_Luca_PiqueRegi/N702N501.qfiltered10.rev /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/processedbamfiles/AT2-N702-N501.qfiltered10.bam
+python load_bam_5prime_ends.py --assembly hg19 /atacseq_Luca_PiqueRegi/N702N502.qfiltered10.fwd /atacseq_Luca_PiqueRegi/N702N502.qfiltered10.rev /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/processedbamfiles/AT2-N702-N502.qfiltered10.bam
+python load_bam_5prime_ends.py --assembly hg19 /atacseq_Luca_PiqueRegi/N702N503.qfiltered10.fwd /atacseq_Luca_PiqueRegi/N702N503.qfiltered10.rev /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/processedbamfiles/AT2-N702-N503.qfiltered10.bam
+
+python load_bam_5prime_ends.py --assembly hg19 /atacseq_Luca_PiqueRegi/N703N501.qfiltered10.fwd /atacseq_Luca_PiqueRegi/N703N501.qfiltered10.rev /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/processedbamfiles/AT2-N703-N501.qfiltered10.bam
+python load_bam_5prime_ends.py --assembly hg19 /atacseq_Luca_PiqueRegi/N703N502.qfiltered10.fwd /atacseq_Luca_PiqueRegi/N703N502.qfiltered10.rev /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/processedbamfiles/AT2-N703-N502.qfiltered10.bam
+python load_bam_5prime_ends.py --assembly hg19 /atacseq_Luca_PiqueRegi/N703N503.qfiltered10.fwd /atacseq_Luca_PiqueRegi/N703N503.qfiltered10.rev /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/processedbamfiles/AT2-N703-N503.qfiltered10.bam
+
+python load_bam_5prime_ends.py --assembly hg19 /atacseq_Luca_PiqueRegi/N704N501.qfiltered10.fwd /atacseq_Luca_PiqueRegi/N704N501.qfiltered10.rev /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/processedbamfiles/AT2-N704-N501.qfiltered10.bam
+python load_bam_5prime_ends.py --assembly hg19 /atacseq_Luca_PiqueRegi/N704N502.qfiltered10.fwd /atacseq_Luca_PiqueRegi/N704N502.qfiltered10.rev /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/processedbamfiles/AT2-N704-N502.qfiltered10.bam
+python load_bam_5prime_ends.py --assembly hg19 /atacseq_Luca_PiqueRegi/N704N503.qfiltered10.fwd /atacseq_Luca_PiqueRegi/N704N503.qfiltered10.rev /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/processedbamfiles/AT2-N704-N503.qfiltered10.bam
+
+python load_bam_5prime_ends.py --assembly hg19 /atacseq_Luca_PiqueRegi/N705N501.qfiltered10.fwd /atacseq_Luca_PiqueRegi/N705N501.qfiltered10.rev /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/processedbamfiles/AT2-N705-N501.qfiltered10.bam
+python load_bam_5prime_ends.py --assembly hg19 /atacseq_Luca_PiqueRegi/N705N502.qfiltered10.fwd /atacseq_Luca_PiqueRegi/N705N502.qfiltered10.rev /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/processedbamfiles/AT2-N705-N502.qfiltered10.bam
+python load_bam_5prime_ends.py --assembly hg19 /atacseq_Luca_PiqueRegi/N705N503.qfiltered10.fwd /atacseq_Luca_PiqueRegi/N705N503.qfiltered10.rev /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/processedbamfiles/AT2-N705-N503.qfiltered10.bam
+
+python load_bam_5prime_ends.py --assembly hg19 /atacseq_Luca_PiqueRegi/N706N501.qfiltered10.fwd /atacseq_Luca_PiqueRegi/N706N501.qfiltered10.rev /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/processedbamfiles/AT2-N706-N501.qfiltered10.bam
+python load_bam_5prime_ends.py --assembly hg19 /atacseq_Luca_PiqueRegi/N706N502.qfiltered10.fwd /atacseq_Luca_PiqueRegi/N706N502.qfiltered10.rev /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/processedbamfiles/AT2-N706-N502.qfiltered10.bam
+python load_bam_5prime_ends.py --assembly hg19 /atacseq_Luca_PiqueRegi/N706N503.qfiltered10.fwd /atacseq_Luca_PiqueRegi/N706N503.qfiltered10.rev /home/hjshim/d/shared_data/internal_restricted/atacseq_Luca_PiqueRegi/processedbamfiles/AT2-N706-N503.qfiltered10.bam
+\end{lstlisting}
+
+\subsection{Obtain library read depth}
+\label{sec-2-6}
+First set track stats using set\_track\_stats.py and get library read depth using get\_track\_stats.py. One downside might be that it computes library read depth over all chromosomes including sex chromosomes.  
+\lstset{breaklines=true,showspaces=false,showtabs=false,tabsize=2,basicstyle=\ttfamily,frame=single,keywordstyle=\color{Blue},stringstyle=\color{BrickRed},commentstyle=\color{ForestGreen},columns=fullflexible,language=bash,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+cd /home/hjshim/d/hjshim/software/genome/python/script/db/
+
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N701N501.qfiltered10.fwd
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N701N502.qfiltered10.fwd
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N701N503.qfiltered10.fwd
+
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N701N501.qfiltered10.rev
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N701N502.qfiltered10.rev
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N701N503.qfiltered10.rev
+
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N702N501.qfiltered10.fwd
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N702N502.qfiltered10.fwd
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N702N503.qfiltered10.fwd
+
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N702N501.qfiltered10.rev
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N702N502.qfiltered10.rev
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N702N503.qfiltered10.rev
+
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N703N501.qfiltered10.fwd
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N703N502.qfiltered10.fwd
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N703N503.qfiltered10.fwd
+
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N703N501.qfiltered10.rev
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N703N502.qfiltered10.rev
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N703N503.qfiltered10.rev
+
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N704N501.qfiltered10.fwd
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N704N502.qfiltered10.fwd
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N704N503.qfiltered10.fwd
+
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N704N501.qfiltered10.rev
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N704N502.qfiltered10.rev
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N704N503.qfiltered10.rev
+
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N705N501.qfiltered10.fwd
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N705N502.qfiltered10.fwd
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N705N503.qfiltered10.fwd
+
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N705N501.qfiltered10.rev
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N705N502.qfiltered10.rev
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N705N503.qfiltered10.rev
+
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N706N501.qfiltered10.fwd
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N706N502.qfiltered10.fwd
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N706N503.qfiltered10.fwd
+
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N706N501.qfiltered10.rev
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N706N502.qfiltered10.rev
+python set_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N706N503.qfiltered10.rev
+\end{lstlisting}
+
+\lstset{breaklines=true,showspaces=false,showtabs=false,tabsize=2,basicstyle=\ttfamily,frame=single,keywordstyle=\color{Blue},stringstyle=\color{BrickRed},commentstyle=\color{ForestGreen},columns=fullflexible,language=bash,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+cd /home/hjshim/d/hjshim/software/genome/python/script/db/
+
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N701N501.qfiltered10.fwd
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N701N502.qfiltered10.fwd
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N701N503.qfiltered10.fwd
+
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N701N501.qfiltered10.rev
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N701N502.qfiltered10.rev
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N701N503.qfiltered10.rev
+
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N702N501.qfiltered10.fwd
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N702N502.qfiltered10.fwd
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N702N503.qfiltered10.fwd
+
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N702N501.qfiltered10.rev
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N702N502.qfiltered10.rev
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N702N503.qfiltered10.rev
+
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N703N501.qfiltered10.fwd
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N703N502.qfiltered10.fwd
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N703N503.qfiltered10.fwd
+
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N703N501.qfiltered10.rev
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N703N502.qfiltered10.rev
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N703N503.qfiltered10.rev
+
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N704N501.qfiltered10.fwd
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N704N502.qfiltered10.fwd
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N704N503.qfiltered10.fwd
+
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N704N501.qfiltered10.rev
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N704N502.qfiltered10.rev
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N704N503.qfiltered10.rev
+
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N705N501.qfiltered10.fwd
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N705N502.qfiltered10.fwd
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N705N503.qfiltered10.fwd
+
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N705N501.qfiltered10.rev
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N705N502.qfiltered10.rev
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N705N503.qfiltered10.rev
+
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N706N501.qfiltered10.fwd
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N706N502.qfiltered10.fwd
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N706N503.qfiltered10.fwd
+
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N706N501.qfiltered10.rev
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N706N502.qfiltered10.rev
+python get_track_stats.py --assembly hg19 /atacseq_Luca_PiqueRegi/N706N503.qfiltered10.rev
+\end{lstlisting}
+
+Library read depths have been saved in:
+\lstset{breaklines=true,showspaces=false,showtabs=false,tabsize=2,basicstyle=\ttfamily,frame=single,keywordstyle=\color{Blue},stringstyle=\color{BrickRed},commentstyle=\color{ForestGreen},columns=fullflexible,language=bash,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+/home/hjshim/d/shared_data/internal/hdf5/hg19/atacseq_Luca_PiqueRegi/library.depth.txt
 \end{lstlisting}
 % Emacs 24.5.1 (Org mode 8.2.10)
 \end{document}
